@@ -1,0 +1,60 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      LEAN_EMULATOR_DIR: ${{ github.workspace }}/emulator-fork
+    steps:
+      - name: Checkout lean
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10"
+
+      - name: Checkout emulator fork
+        uses: actions/checkout@v4
+        with:
+          repository: rebornix/emulate
+          ref: lean-extensions
+          path: emulator-fork
+
+      - name: Install emulator deps and build
+        working-directory: ${{ github.workspace }}/emulator-fork
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Install lean deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Doc-tests
+        run: npm run test:docs

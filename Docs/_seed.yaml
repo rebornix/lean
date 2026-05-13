@@ -1,0 +1,72 @@
+api_keys:
+  - lin_api_test
+organizations:
+  - id: org-1
+    name: Acme
+    url_key: acme
+users:
+  - id: user-alice
+    name: Alice
+    email: alice@acme.com
+    display_name: Alice
+    organization: org-1
+    admin: true
+  - id: user-bob
+    name: Bob
+    email: bob@acme.com
+    display_name: Bob
+    organization: org-1
+teams:
+  - id: team-eng
+    name: Engineering
+    key: ENG
+    organization: org-1
+workflow_states:
+  - id: state-todo
+    name: Todo
+    type: unstarted
+    team: team-eng
+    position: 1
+  - id: state-progress
+    name: In Progress
+    type: started
+    team: team-eng
+    position: 2
+  - id: state-done
+    name: Done
+    type: completed
+    team: team-eng
+    position: 3
+labels:
+  - id: label-bug
+    name: Bug
+    team: team-eng
+issues:
+  - id: issue-1
+    title: First issue
+    team: team-eng
+    state: state-todo
+    assignee: user-alice
+    creator: user-alice
+    priority: 0
+  - id: issue-2
+    title: Login bug
+    team: team-eng
+    state: state-progress
+    assignee: user-bob
+    creator: user-alice
+    priority: 1
+  - id: issue-3
+    title: Add dark mode
+    team: team-eng
+    state: state-todo
+    assignee: user-bob
+    creator: user-alice
+    priority: 3
+  - id: issue-4
+    title: Refactor API
+    team: team-eng
+    state: state-done
+    assignee: user-alice
+    creator: user-alice
+    priority: 2

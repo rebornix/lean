@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest a change to lean
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's the problem?
+      placeholder: "What can't you do today, or what's awkward?"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed shape
+      placeholder: |
+        $ lean ...
+        (sketch the CLI surface or output you'd want)
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

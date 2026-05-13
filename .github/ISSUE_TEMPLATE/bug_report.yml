@@ -1,0 +1,43 @@
+name: Bug report
+description: Report a problem with lean
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      placeholder: |
+        $ lean ...
+        (paste output, exit code, --json error if relevant; redact secrets)
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: lean version
+      placeholder: "0.1.0 (run `lean --version`)"
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      placeholder: "20.x"
+    validations:
+      required: true
+  - type: dropdown
+    id: target
+    attributes:
+      label: Linear backend
+      options:
+        - api.linear.app (real Linear)
+        - local emulator (rebornix/emulate)
+        - other
+    validations:
+      required: true

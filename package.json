@@ -1,0 +1,67 @@
+{
+  "name": "@rebornix/lean",
+  "version": "0.1.0",
+  "description": "A small TypeScript CLI for Linear, in the style of gh.",
+  "keywords": [
+    "linear",
+    "cli",
+    "graphql",
+    "issues",
+    "project-management"
+  ],
+  "homepage": "https://github.com/rebornix/lean#readme",
+  "bugs": {
+    "url": "https://github.com/rebornix/lean/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rebornix/lean.git"
+  },
+  "license": "MIT",
+  "author": "Peng Lyu <rebornix@gmail.com>",
+  "type": "module",
+  "bin": {
+    "lean": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "SKILL.md",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint --max-warnings 0 .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:docs": "node --import tsx scripts/doc-test.ts",
+    "check": "npm run lint && npm run format:check && npm run type-check && npm run test:docs",
+    "prepare": "npm run build",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.0.0",
+    "@linear/sdk": "^29.0.0",
+    "commander": "^12.0.0",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "execa": "^9.5.0",
+    "prettier": "^3.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.49.0",
+    "yaml": "^2.6.0"
+  }
+}
