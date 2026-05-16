@@ -41,7 +41,7 @@ async function runApi(opts: ApiOpts): Promise<void> {
   }
 
   const variables = parseVariables(opts.variable ?? []);
-  const client = getClient();
+  const client = await getClient();
 
   if (opts.paginate) {
     const data = await paginate(client, query, variables);
@@ -151,7 +151,7 @@ function setAtPath(root: unknown, path: string[], value: unknown): void {
 }
 
 async function paginate(
-  client: ReturnType<typeof getClient>,
+  client: Awaited<ReturnType<typeof getClient>>,
   query: string,
   variables: Record<string, unknown>
 ): Promise<unknown> {

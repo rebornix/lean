@@ -1,30 +1,53 @@
-import { readFileSync, writeFileSync, mkdirSync, unlinkSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, unlinkSync, existsSync, chmodSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 
-const CONFIG_DIR = join(homedir(), ".config", "lean");
-const CONFIG_FILE = join(CONFIG_DIR, "config.json");
+function configDir(): string {
+  const override = process.env.LEAN_CONFIG_DIR;
+  if (override && override.length > 0) {
+    return override;
+  }
+  return join(homedir(), ".config", "lean");
+}
 
-interface Config {
+function configFile(): string {
+  return join(configDir(), "config.json");
+}
+
+export interface OAuthCredentials {
+  access_token: string;
+  refresh_token?: string;
+  scope: string;
+  obtained_at: string;
+  expires_at?: string;
+}
+
+export interface Config {
   apiKey?: string;
+  oauth?: OAuthCredentials;
 }
 
 export function readConfig(): Config {
   try {
-    return JSON.parse(readFileSync(CONFIG_FILE, "utf-8"));
+    return JSON.parse(readFileSync(configFile(), "utf-8")) as Config;
   } catch {
     return {};
   }
 }
 
 export function writeConfig(config: Config): void {
-  mkdirSync(CONFIG_DIR, { recursive: true });
-  writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+  mkdirSync(configDir(), { recursive: true });
+  writeFileSync(configFile(), JSON.stringify(config, null, 2));
+  try {
+    chmodSync(configFile(), 0o600);
+  } catch {
+    // best-effort; Windows or unusual filesystems may not support chmod
+  }
 }
 
 export function deleteConfig(): void {
-  if (existsSync(CONFIG_FILE)) {
-    unlinkSync(CONFIG_FILE);
+  if (existsSync(configFile())) {
+    unlinkSync(configFile());
   }
 }
 

@@ -12,10 +12,11 @@
  *   LEAN_EMULATOR_PORT Emulator port (default 4100, distinct from a dev one)
  */
 import { spawn, type ChildProcess } from "node:child_process";
-import { readFile, writeFile, readdir } from "node:fs/promises";
+import { readFile, writeFile, readdir, rm, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, resolve, relative, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { tmpdir } from "node:os";
 import { execa } from "execa";
 import YAML from "yaml";
 
@@ -26,6 +27,9 @@ const EMULATOR_DIR = process.env.LEAN_EMULATOR_DIR
 const PORT = Number(process.env.LEAN_EMULATOR_PORT ?? 4100);
 const EMULATOR_URL = `http://localhost:${PORT}`;
 const API_KEY = "lin_api_test";
+// Per-run isolated config dir so tests never see the developer's
+// ~/.config/lean/config.json. Removed at process exit.
+const TEST_CONFIG_DIR = join(tmpdir(), `lean-doc-test-${process.pid}`);
 
 type Block = {
   kind: "console";
@@ -204,6 +208,11 @@ async function resetEmulator(): Promise<void> {
   }
 }
 
+async function resetConfig(): Promise<void> {
+  await rm(TEST_CONFIG_DIR, { recursive: true, force: true });
+  await mkdir(TEST_CONFIG_DIR, { recursive: true });
+}
+
 async function seedEmulator(seed: unknown): Promise<void> {
   const res = await fetch(`${EMULATOR_URL}/__seed`, {
     method: "POST",
@@ -298,6 +307,7 @@ async function runLean(
     NO_COLOR: "1",
     FORCE_COLOR: "0",
     LEAN_SKIP_DOTENV: "1",
+    LEAN_CONFIG_DIR: TEST_CONFIG_DIR,
   };
   if (envOverrides) {
     for (const [key, value] of Object.entries(envOverrides)) {
@@ -360,6 +370,7 @@ interface RunSummary {
 
 async function runDoc(doc: DocFile, defaultSeed: unknown, update: boolean): Promise<RunSummary> {
   await resetEmulator();
+  await resetConfig();
   if (defaultSeed) {
     await seedEmulator(defaultSeed);
   }
@@ -380,6 +391,7 @@ async function runDoc(doc: DocFile, defaultSeed: unknown, update: boolean): Prom
     // Reset state between blocks so each block is self-contained. Sequencing
     // within one block is intentional; sequencing across blocks is not.
     await resetEmulator();
+    await resetConfig();
     if (defaultSeed) {
       await seedEmulator(defaultSeed);
     }
@@ -445,11 +457,16 @@ async function main(): Promise<void> {
   }
 
   console.error(`Starting emulator on ${EMULATOR_URL} ...`);
+  await mkdir(TEST_CONFIG_DIR, { recursive: true });
   const emulator = await startEmulator();
   const cleanup = (): void => {
     if (!emulator.killed) {
       emulator.kill("SIGTERM");
     }
+    // Best-effort: blow away the isolated config dir. Sync rm via fs/promises
+    // can't run in an 'exit' handler, so we use a fire-and-forget approach
+    // that's good enough for the developer machine; on SIGINT we await it.
+    void rm(TEST_CONFIG_DIR, { recursive: true, force: true }).catch(() => undefined);
   };
   process.on("exit", cleanup);
   process.on("SIGINT", () => {

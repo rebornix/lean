@@ -2,7 +2,7 @@ import { select, checkbox } from "@inquirer/prompts";
 import { getClient } from "../api/client.js";
 
 export async function teamPicker(): Promise<string> {
-  const client = getClient();
+  const client = await getClient();
   const teams = await client.teams();
   return select({
     message: "Select team:",
@@ -11,7 +11,7 @@ export async function teamPicker(): Promise<string> {
 }
 
 export async function statePicker(teamId: string): Promise<string> {
-  const client = getClient();
+  const client = await getClient();
   const team = await client.team(teamId);
   const states = await team.states();
   return select({
@@ -21,7 +21,7 @@ export async function statePicker(teamId: string): Promise<string> {
 }
 
 export async function assigneePicker(): Promise<string> {
-  const client = getClient();
+  const client = await getClient();
   const users = await client.users();
   return select({
     message: "Select assignee:",
@@ -30,7 +30,7 @@ export async function assigneePicker(): Promise<string> {
 }
 
 export async function labelPicker(): Promise<string[]> {
-  const client = getClient();
+  const client = await getClient();
   const labels = await client.issueLabels();
   return checkbox({
     message: "Select labels:",

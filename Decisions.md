@@ -136,3 +136,34 @@ in practice and the table omits the columns a human actually scans
 refreshed via `--update`. New doc-tests cover `--all`, `--assignee
 anyone`, `--assignee <email>`, and the empty-list message. Real-Linear
 verified against api.linear.app.
+
+### ADR-009: OAuth login (PKCE auth-code with OOB fallback)
+**Date**: 2026-05-15
+**Status**: Accepted
+**Context**: Personal API keys are a friction point for human users.
+Linear officially supports OAuth 2.0 + PKCE; this is the conventional
+auth path for a CLI in 2026. Specs/007-oauth.md covers the full design.
+**Decision**:
+- Authorization Code Grant with PKCE; no `client_secret` ships in the
+  binary. Public `client_id` baked in via `LEAN_OAUTH_CLIENT_ID` env
+  override; documented to be set per-OAuth-app once registered.
+- Fixed loopback redirect `http://127.0.0.1:53682/callback`. Linear
+  doesn't permit wildcard ports, so one registered URI is the
+  pragmatic baseline.
+- No device flow (Linear doesn't support RFC 8628). Instead, when
+  stdout is non-TTY or `--oob` is passed, `lean auth login` emits a
+  JSON envelope (`auth_url`, `state`, `code_verifier`, `next`) and the
+  user/agent finishes via `lean auth login --complete --code ...
+  --state ... --code-verifier ...`.
+- Credential precedence: `LINEAR_ACCESS_TOKEN > LINEAR_API_KEY >
+  config.oauth > config.apiKey`.
+- File-only credential store for v1 (`~/.config/lean/config.json`,
+  `chmod 0600`). OS keychain integration is deferred — adds a native
+  dependency that breaks Alpine / NixOS containers without an obvious
+  benefit at this scale.
+- `LEAN_CONFIG_DIR` env var added so the doc-test runner can isolate
+  the credentials store from the developer's real `~/.config/lean/`.
+**Consequences**: `src/auth/{oauth-config,pkce,credentials,oauth-flow}.ts`
+implement the flow; `src/api/client.ts` becomes async to support
+transparent refresh; `Docs/auth-oauth.md` doc-tests the non-interactive
+paths. Five new doc-tests + a manual checklist for the live flow.

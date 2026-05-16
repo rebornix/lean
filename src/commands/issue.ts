@@ -28,7 +28,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const TEAM_NUMBER_RE = /^([A-Z][A-Z0-9_]*)-(\d+)$/;
 
 async function lookupIssue(identifier: string): Promise<RawIssue | null> {
-  const client = getClient();
+  const client = await getClient();
 
   if (UUID_RE.test(identifier)) {
     const res = await client.client.rawRequest<{ issue: RawIssue | null }, { id: string }>(
@@ -60,7 +60,7 @@ async function lookupIssue(identifier: string): Promise<RawIssue | null> {
 }
 
 async function findStateByName(
-  client: ReturnType<typeof getClient>,
+  client: Awaited<ReturnType<typeof getClient>>,
   teamId: string,
   stateName: string
 ): Promise<string | null> {
@@ -70,7 +70,10 @@ async function findStateByName(
   return match?.id ?? null;
 }
 
-async function findFirstCompletedState(client: ReturnType<typeof getClient>, teamId: string): Promise<string | null> {
+async function findFirstCompletedState(
+  client: Awaited<ReturnType<typeof getClient>>,
+  teamId: string
+): Promise<string | null> {
   const team = await client.team(teamId);
   const states = await team.states();
   const completed = states.nodes.filter(s => s.type === "completed").sort((a, b) => a.position - b.position);
@@ -89,7 +92,7 @@ export function registerIssueCommands(issue: Command): void {
     .option("--all", "List all issues; equivalent to --assignee anyone")
     .option("--json", "Output as JSON")
     .action(async opts => {
-      const client = getClient();
+      const client = await getClient();
       const filter: Record<string, unknown> = {};
 
       if (opts.team) {
@@ -208,7 +211,7 @@ export function registerIssueCommands(issue: Command): void {
           action: "Pass --team <key> and --title <text>",
         });
       }
-      const client = getClient();
+      const client = await getClient();
       const teams = await client.teams({ filter: { key: { eq: opts.team } } });
       const team = teams.nodes.find(t => t.key === opts.team) ?? null;
       if (!team) {
@@ -264,7 +267,7 @@ export function registerIssueCommands(issue: Command): void {
     .option("--assignee <assignee>", "Assignee email or @me")
     .option("--json", "Output as JSON")
     .action(async (identifier: string, opts) => {
-      const client = getClient();
+      const client = await getClient();
       const iss = await lookupIssue(identifier);
       if (!iss) {
         throw new LeanError("not_found", `Issue not found: ${identifier}`);
@@ -315,7 +318,7 @@ export function registerIssueCommands(issue: Command): void {
     .description("Move an issue to its team's first completed state")
     .option("--json", "Output as JSON")
     .action(async (identifier: string, opts) => {
-      const client = getClient();
+      const client = await getClient();
       const iss = await lookupIssue(identifier);
       if (!iss) {
         throw new LeanError("not_found", `Issue not found: ${identifier}`);
@@ -353,7 +356,7 @@ export function registerIssueCommands(issue: Command): void {
           action: "Provide --body <text> or --body-file <path>",
         });
       }
-      const client = getClient();
+      const client = await getClient();
       const iss = await lookupIssue(identifier);
       if (!iss) {
         throw new LeanError("not_found", `Issue not found: ${identifier}`);
