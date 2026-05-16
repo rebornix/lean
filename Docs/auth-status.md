@@ -8,4 +8,5 @@ API key stored in config or `LINEAR_API_KEY`.
 ```console
 $ lean auth status
 Logged in as: Alice (alice@acme.com)
+Auth: API key
 ```

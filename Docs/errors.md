@@ -71,10 +71,10 @@ $ env -u LINEAR_API_KEY lean auth status
 ```console
 $ env -u LINEAR_API_KEY lean auth login
 {
-  "error": "prompt_required_in_non_tty",
-  "message": "Cannot prompt for API key in non-interactive mode",
+  "error": "invalid_argument",
+  "message": "OAuth client ID is not configured. The OAuth app for @rebornix/lean has not been registered with Linear yet.",
   "exit_code": 1,
-  "action": "Pass --api-key <key> or set LINEAR_API_KEY"
+  "action": "Register an OAuth app at https://linear.app/settings/api/applications and set LEAN_OAUTH_CLIENT_ID; see Specs/007-oauth.md for details."
 }
 ```
 

@@ -9,13 +9,23 @@ LLM agents as a single, self-contained reference.
 ## Authentication
 
 ```
-LINEAR_API_KEY=lin_api_...   # env var; preferred for CI / agents
-~/.config/lean/config.json   # written by `lean auth login --api-key ...`
+LINEAR_API_KEY=lin_api_...    # env var; preferred for CI / agents
+LINEAR_ACCESS_TOKEN=<bearer>  # OAuth bearer; overrides the API key
+~/.config/lean/config.json    # written by `lean auth login`
 ```
 
-`LINEAR_API_KEY` always wins over the config file. If neither is set, any
-command that talks to Linear emits the structured error
-`{"error":"auth_required","exit_code":2,...}`.
+Precedence: `LINEAR_ACCESS_TOKEN > LINEAR_API_KEY > config.oauth >
+config.apiKey`. If nothing is set, any command that talks to Linear
+emits `{"error":"auth_required","exit_code":2,...}`.
+
+Interactive `lean auth login` runs the OAuth 2.0 + PKCE flow (opens a
+browser at Linear's authorize page, captures the redirect on
+`127.0.0.1:53682`, stores the token). In non-TTY contexts (agents, CI),
+`lean auth login` emits a JSON envelope so the agent can present the
+auth URL to the user; the agent then completes via `lean auth login
+--complete --code <code> --state <state> --code-verifier <verifier>`.
+For fully headless automation, `lean auth login --api-key <key>` skips
+OAuth entirely.
 
 ## Discovery
 

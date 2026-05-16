@@ -10,4 +10,5 @@ environment, so `auth status` succeeds without any prompt.
 ```console
 $ lean auth status
 Logged in as: Alice (alice@acme.com)
+Auth: API key
 ```

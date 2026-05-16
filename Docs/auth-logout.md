@@ -17,4 +17,5 @@ Logged out.
 ```console
 $ lean auth status
 Logged in as: Alice (alice@acme.com)
+Auth: API key
 ```
