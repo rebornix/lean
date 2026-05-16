@@ -1,4 +1,5 @@
 import type { Command } from "commander";
+import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { getClient } from "../api/client.js";
 import { table, json } from "../output/index.js";
@@ -75,6 +76,24 @@ async function findFirstCompletedState(client: ReturnType<typeof getClient>, tea
   const states = await team.states();
   const completed = states.nodes.filter(s => s.type === "completed").sort((a, b) => a.position - b.position);
   return completed[0]?.id ?? null;
+}
+
+async function openUrl(url: string): Promise<void> {
+  const [command, args] =
+    process.platform === "darwin"
+      ? ["open", [url]]
+      : process.platform === "win32"
+        ? ["rundll32", ["url.dll,FileProtocolHandler", url]]
+        : ["xdg-open", [url]];
+
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(command, args, { detached: true, stdio: "ignore" });
+    child.once("error", reject);
+    child.once("spawn", () => {
+      child.unref();
+      resolve();
+    });
+  });
 }
 
 export function registerIssueCommands(issue: Command): void {
@@ -164,8 +183,7 @@ export function registerIssueCommands(issue: Command): void {
         throw new LeanError("not_found", `Issue not found: ${identifier}`);
       }
       if (opts.web) {
-        const { exec } = await import("node:child_process");
-        exec(`xdg-open ${iss.url}`);
+        await openUrl(iss.url);
         return;
       }
       const description = iss.description && iss.description.length > 0 ? iss.description : null;
