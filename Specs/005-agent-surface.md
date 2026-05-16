@@ -2,7 +2,7 @@
 
 ## Goal
 
-Complete the agent-first surface promised by `Specs/agent-first-design.md`
+Complete the agent-first surface promised by `Specs/000-agent-first-design.md`
 so an LLM agent or scripted client can:
 
 1. **Discover** what `lean` can do in a few hundred tokens, without
