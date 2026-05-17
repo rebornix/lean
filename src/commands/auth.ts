@@ -1,15 +1,24 @@
 import type { Command } from "commander";
-import { input } from "@inquirer/prompts";
+import { password } from "@inquirer/prompts";
 import { writeConfig, deleteConfig, getApiKey } from "../config/index.js";
 import { getClient } from "../api/client.js";
 import { LeanError } from "../errors.js";
+import { respond } from "../output/index.js";
+
+interface AuthOpts {
+  apiKey?: string;
+  json?: boolean;
+  format?: string;
+}
 
 export function registerAuthCommands(auth: Command): void {
   auth
     .command("login")
     .description("Authenticate with Linear API key")
     .option("--api-key <key>", "Provide API key non-interactively")
-    .action(async (opts: { apiKey?: string }) => {
+    .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
+    .action(async (opts: AuthOpts) => {
       let apiKey = opts.apiKey;
       if (!apiKey) {
         if (!process.stdin.isTTY) {
@@ -17,16 +26,20 @@ export function registerAuthCommands(auth: Command): void {
             action: "Pass --api-key <key> or set LINEAR_API_KEY",
           });
         }
-        apiKey = await input({ message: "Enter your Linear API key:" });
+        apiKey = await password({ message: "Enter your Linear API key:", mask: "*" });
       }
       writeConfig({ apiKey });
-      console.log("API key saved.");
+      respond(opts, { ok: true }, () => {
+        console.log("API key saved.");
+      });
     });
 
   auth
     .command("status")
     .description("Show current authentication status")
-    .action(async () => {
+    .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
+    .action(async (opts: AuthOpts) => {
       try {
         getApiKey();
       } catch {
@@ -36,14 +49,20 @@ export function registerAuthCommands(auth: Command): void {
       }
       const client = getClient();
       const viewer = await client.viewer;
-      console.log(`Logged in as: ${viewer.name} (${viewer.email})`);
+      respond(opts, { authenticated: true, user: { id: viewer.id, name: viewer.name, email: viewer.email } }, () => {
+        console.log(`Logged in as: ${viewer.name} (${viewer.email})`);
+      });
     });
 
   auth
     .command("logout")
     .description("Remove stored credentials")
-    .action(() => {
+    .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
+    .action((opts: AuthOpts) => {
       deleteConfig();
-      console.log("Logged out.");
+      respond(opts, { ok: true }, () => {
+        console.log("Logged out.");
+      });
     });
 }

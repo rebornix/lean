@@ -2,7 +2,7 @@ import type { Command } from "commander";
 import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { getClient } from "../api/client.js";
-import { table, json } from "../output/index.js";
+import { table, respond } from "../output/index.js";
 import { priorityLabel } from "../output/priority.js";
 import { LeanError } from "../errors.js";
 
@@ -107,6 +107,7 @@ export function registerIssueCommands(issue: Command): void {
     .option("--limit <n>", "Max results", "25")
     .option("--all", "List all issues; equivalent to --assignee anyone")
     .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
     .action(async opts => {
       const client = getClient();
       const filter: Record<string, unknown> = {};
@@ -143,39 +144,37 @@ export function registerIssueCommands(issue: Command): void {
       );
       const issues = result.data?.issues.nodes ?? [];
 
-      if (opts.json) {
-        json(
-          issues.map(i => ({
-            id: i.identifier,
-            title: i.title,
-            state: i.state?.name ?? null,
-            priority: i.priority,
-            priorityLabel: priorityLabel(i.priority),
-            assignee: i.assignee?.email ?? null,
-          }))
-        );
-        return;
-      }
-
-      if (issues.length === 0) {
-        console.log("No issues match.");
-        return;
-      }
-
-      const rows = issues.map(i => ({
-        ID: i.identifier,
-        Title: i.title.slice(0, 60),
-        State: i.state?.name ?? "—",
-        Priority: priorityLabel(i.priority),
-        Assignee: i.assignee?.name ?? "—",
+      const payload = issues.map(i => ({
+        id: i.identifier,
+        title: i.title,
+        state: i.state?.name ?? null,
+        priority: i.priority,
+        priorityLabel: priorityLabel(i.priority),
+        assignee: i.assignee?.email ?? null,
       }));
-      table(rows);
+
+      respond(opts, payload, () => {
+        if (issues.length === 0) {
+          console.log("No issues match.");
+          return;
+        }
+
+        const rows = issues.map(i => ({
+          ID: i.identifier,
+          Title: i.title.slice(0, 60),
+          State: i.state?.name ?? "—",
+          Priority: priorityLabel(i.priority),
+          Assignee: i.assignee?.name ?? "—",
+        }));
+        table(rows);
+      });
     });
 
   issue
     .command("view <identifier>")
     .description("View an issue")
     .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
     .option("--web", "Open in browser")
     .action(async (identifier: string, opts) => {
       const iss = await lookupIssue(identifier);
@@ -187,8 +186,9 @@ export function registerIssueCommands(issue: Command): void {
         return;
       }
       const description = iss.description && iss.description.length > 0 ? iss.description : null;
-      if (opts.json) {
-        json({
+      respond(
+        opts,
+        {
           id: iss.identifier,
           title: iss.title,
           description,
@@ -197,16 +197,17 @@ export function registerIssueCommands(issue: Command): void {
           priorityLabel: priorityLabel(iss.priority),
           assignee: iss.assignee?.email ?? null,
           url: iss.url,
-        });
-        return;
-      }
-      console.log(`${iss.identifier}: ${iss.title}`);
-      console.log(`State:    ${iss.state?.name ?? "—"}`);
-      console.log(`Priority: ${priorityLabel(iss.priority)}`);
-      console.log(`Assignee: ${iss.assignee?.name ?? "—"}`);
-      console.log(`URL:      ${iss.url}`);
-      console.log("");
-      console.log(description ?? "(no description)");
+        },
+        () => {
+          console.log(`${iss.identifier}: ${iss.title}`);
+          console.log(`State:    ${iss.state?.name ?? "—"}`);
+          console.log(`Priority: ${priorityLabel(iss.priority)}`);
+          console.log(`Assignee: ${iss.assignee?.name ?? "—"}`);
+          console.log(`URL:      ${iss.url}`);
+          console.log("");
+          console.log(description ?? "(no description)");
+        }
+      );
     });
 
   issue
@@ -220,6 +221,7 @@ export function registerIssueCommands(issue: Command): void {
     .option("--state <state>", "Workflow state name")
     .option("--assignee <assignee>", "Assignee email or @me")
     .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
     .action(async opts => {
       if (!opts.team || !opts.title) {
         throw new LeanError("missing_required_flag", "--team and --title are required", {
@@ -266,11 +268,9 @@ export function registerIssueCommands(issue: Command): void {
       if (!created) {
         throw new LeanError("linear_api", "issueCreate did not return an issue");
       }
-      if (opts.json) {
-        json({ id: created.identifier, title: created.title });
-        return;
-      }
-      console.log(`${created.identifier}: ${created.title}`);
+      respond(opts, { id: created.identifier, title: created.title }, () => {
+        console.log(`${created.identifier}: ${created.title}`);
+      });
     });
 
   issue
@@ -281,6 +281,7 @@ export function registerIssueCommands(issue: Command): void {
     .option("--priority <priority>", "Priority 0-4")
     .option("--assignee <assignee>", "Assignee email or @me")
     .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
     .action(async (identifier: string, opts) => {
       const client = getClient();
       const iss = await lookupIssue(identifier);
@@ -321,17 +322,17 @@ export function registerIssueCommands(issue: Command): void {
         { id: iss.id, input: update }
       );
       const refreshed = await lookupIssue(identifier);
-      if (opts.json) {
-        json({ id: refreshed?.identifier, title: refreshed?.title });
-        return;
-      }
-      console.log(`${refreshed?.identifier}: ${refreshed?.title}`);
+      const payload = { id: refreshed?.identifier, title: refreshed?.title };
+      respond(opts, payload, () => {
+        console.log(`${refreshed?.identifier}: ${refreshed?.title}`);
+      });
     });
 
   issue
     .command("close <identifier>")
     .description("Move an issue to its team's first completed state")
     .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
     .action(async (identifier: string, opts) => {
       const client = getClient();
       const iss = await lookupIssue(identifier);
@@ -351,11 +352,9 @@ export function registerIssueCommands(issue: Command): void {
          }`,
         { id: iss.id, input: { stateId } }
       );
-      if (opts.json) {
-        json({ id: iss.identifier, closed: true });
-        return;
-      }
-      console.log(`Closed ${iss.identifier}`);
+      respond(opts, { id: iss.identifier, closed: true }, () => {
+        console.log(`Closed ${iss.identifier}`);
+      });
     });
 
   issue
@@ -364,6 +363,7 @@ export function registerIssueCommands(issue: Command): void {
     .option("--body <body>", "Comment body")
     .option("--body-file <file>", "Read comment body from file")
     .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
     .action(async (identifier: string, opts) => {
       const body = opts.bodyFile ? await readFile(opts.bodyFile, "utf-8") : opts.body;
       if (!body) {
@@ -382,10 +382,8 @@ export function registerIssueCommands(issue: Command): void {
          }`,
         { input: { issueId: iss.id, body } }
       );
-      if (opts.json) {
-        json({ issue: iss.identifier, body });
-        return;
-      }
-      console.log(`Commented on ${iss.identifier}`);
+      respond(opts, { issue: iss.identifier, body }, () => {
+        console.log(`Commented on ${iss.identifier}`);
+      });
     });
 }

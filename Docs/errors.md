@@ -82,5 +82,7 @@ $ env -u LINEAR_API_KEY lean auth login
 
 ```console
 $ lean auth login --api-key lin_api_test
-API key saved.
+{
+  "ok": true
+}
 ```
