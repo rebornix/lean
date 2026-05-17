@@ -1,0 +1,29 @@
+{
+  "name": "lean-linear",
+  "version": "0.1.0",
+  "description": "Agent workflows for using the lean Linear CLI.",
+  "author": {
+    "name": "Peng Lyu",
+    "email": "rebornix@gmail.com",
+    "url": "https://github.com/rebornix"
+  },
+  "homepage": "https://github.com/rebornix/lean#readme",
+  "repository": "https://github.com/rebornix/lean",
+  "license": "MIT",
+  "keywords": ["linear", "cli", "agents", "codex"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Lean Linear",
+    "shortDescription": "Use Linear from Codex through the lean CLI.",
+    "longDescription": "Reusable Codex workflows for discovering, reading, creating, and updating Linear issues with lean's human-friendly and agent-friendly CLI surface.",
+    "developerName": "rebornix",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://github.com/rebornix/lean",
+    "defaultPrompt": [
+      "Use Lean Linear to inspect my assigned Linear issues.",
+      "Use Lean Linear to create a Linear issue from this bug report.",
+      "Use Lean Linear to update the Linear issue for the work in this branch."
+    ]
+  }
+}
