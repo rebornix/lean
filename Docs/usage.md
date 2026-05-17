@@ -16,9 +16,9 @@ Commands:
   api      Send a raw GraphQL request to Linear
   usage    Show this help, or `lean <cmd> usage` for command details
 
-All commands support --json for structured output. Errors are emitted as
-JSON on stderr in non-TTY / --json mode. Exit codes: 0 success, 1 user
-error, 2 auth, 3 network, 4 internal.
+Data commands emit JSON in non-TTY mode or with --json. Use --format text to
+force text output. Errors are JSON on stderr in non-TTY / --json
+mode. Exit codes: 0 success, 1 user error, 2 auth, 3 network, 4 internal.
 
 Use `lean <command> usage` for details, or `lean --help` for full help.
 ```
@@ -29,9 +29,9 @@ Use `lean <command> usage` for details, or `lean --help` for full help.
 $ lean auth usage
 lean auth - Authentication
 
-  login   Save a Linear API key (--api-key for headless)
-  status  Show the currently authenticated user (--json)
-  logout  Remove stored credentials
+  login   Save a Linear API key (--api-key for headless, --json, --format text)
+  status  Show the currently authenticated user (--json, --format text)
+  logout  Remove stored credentials (--json, --format text)
 
 Env: LINEAR_API_KEY overrides ~/.config/lean/config.json.
 ```
@@ -42,17 +42,20 @@ Env: LINEAR_API_KEY overrides ~/.config/lean/config.json.
 $ lean issue usage
 lean issue - Issue management
 
-  list    List issues (--team, --state, --assignee, --priority, --limit, --json)
-  view    Show one issue (--json, --web)
+  list    List issues (--team, --state, --assignee, --priority, --limit,
+          --json, --format text)
+  view    Show one issue (--json, --format text, --web)
   create  Create an issue (--team, --title, --description, --description-file,
-          --priority, --state, --assignee, --json)
-  edit    Update an issue (--title, --state, --assignee, --priority, --json)
-  close   Move an issue to its team's first completed state (--json)
-  comment Add a comment (--body, --body-file, --json)
+          --priority, --state, --assignee, --json, --format text)
+  edit    Update an issue (--title, --state, --assignee, --priority, --json,
+          --format text)
+  close   Move an issue to its team's first completed state (--json, --format text)
+  comment Add a comment (--body, --body-file, --json, --format text)
 
 Identifiers: ENG-1 (team key + number) or a UUID.
 
-All commands support --json. See Docs/issue-*.md for examples.
+Non-TTY output defaults to JSON; pass --format text for tables/messages.
+See Docs/issue-*.md for examples.
 ```
 
 ## API usage

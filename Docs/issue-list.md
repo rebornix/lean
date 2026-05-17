@@ -98,3 +98,30 @@ $ lean issue list --json
   }
 ]
 ```
+
+## Agent mode defaults to JSON
+
+When stdout is not a TTY, `lean issue list` produces the same structured
+payload even if the caller does not know to pass `--json`.
+
+```console
+$ lean issue list
+[
+  {
+    "id": "ENG-1",
+    "title": "First issue",
+    "state": "Todo",
+    "priority": 0,
+    "priorityLabel": "None",
+    "assignee": "alice@acme.com"
+  },
+  {
+    "id": "ENG-4",
+    "title": "Refactor API",
+    "state": "Done",
+    "priority": 2,
+    "priorityLabel": "High",
+    "assignee": "alice@acme.com"
+  }
+]
+```

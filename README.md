@@ -50,6 +50,9 @@ for LLM agents. `--help` prints commander's full tree.
 | **Human** | TTY stdout, no `--json` | Tables, labelled fields, plain `Error:` lines |
 | **Agent** | Non-TTY stdout (pipe / CI / agent) or `--json` | JSON on stdout for success, JSON on stderr for errors |
 
+Pass `--format text` to force human-readable success output when stdout is not
+a TTY.
+
 Errors carry a stable schema:
 `{ "error": <id>, "message": ..., "action"?: ..., "exit_code": <n> }`
 with exit codes `0` success, `1` user error, `2` auth, `3` network,

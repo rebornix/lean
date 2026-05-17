@@ -33,23 +33,24 @@ won't drift silently.
 ## Commands
 
 ```
-lean auth login [--api-key <key>]
-lean auth status [--json]
-lean auth logout
+lean auth login [--api-key <key>] [--json] [--format text]
+lean auth status [--json] [--format text]
+lean auth logout [--json] [--format text]
 
 lean issue list [--team <key>] [--state <name>] [--assignee @me|<email>]
-                [--priority 0..4] [--limit N] [--json]
-lean issue view <ENG-1|UUID> [--json] [--web]
+                [--priority 0..4] [--limit N] [--json] [--format text]
+lean issue view <ENG-1|UUID> [--json] [--format text] [--web]
 lean issue create --team <key> --title <text>
                   [--description <text> | --description-file <path>]
                   [--priority 0..4] [--state <name>] [--assignee @me|<email>]
-                  [--json]
+                  [--json] [--format text]
 lean issue edit <ENG-1|UUID>
                 [--title <text>] [--state <name>]
-                [--assignee @me|<email>] [--priority 0..4] [--json]
-lean issue close <ENG-1|UUID> [--json]
+                [--assignee @me|<email>] [--priority 0..4]
+                [--json] [--format text]
+lean issue close <ENG-1|UUID> [--json] [--format text]
 lean issue comment <ENG-1|UUID>
-                   [--body <text> | --body-file <path>] [--json]
+                   [--body <text> | --body-file <path>] [--json] [--format text]
 
 lean api --query <gql> | --query-file <path>
          [--variable key=value]... [--operation <name>] [--paginate]
@@ -59,6 +60,7 @@ lean api --query <gql> | --query-file <path>
 
 - Success: human mode prints a small table or message; agent mode (or
   `--json`) prints a JSON payload on stdout.
+- `--format text` forces table/message output for pipes or doc examples.
 - Errors: agent mode prints
   `{"error":<id>,"message":<text>,"action"?:<text>,"exit_code":<n>,"details"?:{...}}`
   on stderr. Human mode prints `Error: ...` and an optional `Hint:` line.

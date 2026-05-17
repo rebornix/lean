@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync, unlinkSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
+import { LeanError } from "../errors.js";
 
 const CONFIG_DIR = join(homedir(), ".config", "lean");
 const CONFIG_FILE = join(CONFIG_DIR, "config.json");
@@ -37,5 +38,7 @@ export function getApiKey(): string {
   if (config.apiKey) {
     return config.apiKey;
   }
-  throw new Error("No API key found. Run `lean auth login` or set LINEAR_API_KEY.");
+  throw new LeanError("auth_required", "No API key configured", {
+    action: "Run `lean auth login` or set LINEAR_API_KEY",
+  });
 }

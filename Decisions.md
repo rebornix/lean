@@ -136,3 +136,27 @@ in practice and the table omits the columns a human actually scans
 refreshed via `--update`. New doc-tests cover `--all`, `--assignee
 anyone`, `--assignee <email>`, and the empty-list message. Real-Linear
 verified against api.linear.app.
+
+### ADR-009: Non-TTY success output defaults to JSON
+**Date**: 2026-05-17
+**Status**: Accepted
+**Context**: `lean` is intended to be useful for both humans and agents.
+Errors already use non-TTY stdout detection to choose JSON on stderr, but
+success output still required callers to know and pass `--json`. That
+made piped, CI, and agent invocations receive tables or labelled text by
+default, contradicting the "machine-friendly everywhere else" contract.
+**Decision**:
+- Data commands emit JSON success payloads when stdout is not a TTY.
+- TTY success output remains text/table-oriented unless `--json` is
+  passed.
+- `--json` remains a convenience flag for forcing JSON.
+- `--format <json|text>` is the explicit output-format override; use
+  `--format text` to force tables/messages in non-TTY contexts.
+- Auth commands support the same output contract as issue commands.
+- The doc-test runner uses a per-run temporary HOME and an internal
+  `LEAN_FORCE_FORMAT=text` override so human-shaped examples remain
+  executable while agent-mode examples can exercise raw non-TTY defaults.
+**Consequences**: Agents and scripts can call common commands without
+discovering `--json` first and still receive structured stdout. Human
+users retain readable TTY output. Doc-tests now cover non-TTY JSON
+success output and isolated auth config state.

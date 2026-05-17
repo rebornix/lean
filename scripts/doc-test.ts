@@ -13,8 +13,9 @@
  */
 import { spawn, type ChildProcess } from "node:child_process";
 import { readFile, writeFile, readdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, mkdtempSync } from "node:fs";
 import { join, resolve, relative, dirname } from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { execa } from "execa";
 import YAML from "yaml";
@@ -26,6 +27,9 @@ const EMULATOR_DIR = process.env.LEAN_EMULATOR_DIR
 const PORT = Number(process.env.LEAN_EMULATOR_PORT ?? 4100);
 const EMULATOR_URL = `http://localhost:${PORT}`;
 const API_KEY = "lin_api_test";
+const DOC_HOME = process.env.LEAN_DOC_TEST_HOME
+  ? resolve(process.env.LEAN_DOC_TEST_HOME)
+  : mkdtempSync(join(tmpdir(), "lean-doc-test-home-"));
 
 type Block = {
   kind: "console";
@@ -259,7 +263,8 @@ function tokenize(command: string): string[] {
 
 async function runLean(
   command: string,
-  envOverrides?: Record<string, string | null>
+  envOverrides?: Record<string, string | null>,
+  opts: { forceFormat?: "json" | "text" } = {}
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   let tokens = tokenize(command);
   const inlineUnset: string[] = [];
@@ -298,7 +303,11 @@ async function runLean(
     NO_COLOR: "1",
     FORCE_COLOR: "0",
     LEAN_SKIP_DOTENV: "1",
+    HOME: DOC_HOME,
   };
+  if (opts.forceFormat) {
+    baseEnv.LEAN_FORCE_FORMAT = opts.forceFormat;
+  }
   if (envOverrides) {
     for (const [key, value] of Object.entries(envOverrides)) {
       if (value === null) {
@@ -331,6 +340,11 @@ async function runLean(
     stderr,
     exitCode: result.exitCode ?? 0,
   };
+}
+
+function looksLikeJsonOutput(expected: string): boolean {
+  const trimmed = expected.trimStart();
+  return trimmed.startsWith("{") || trimmed.startsWith("[");
 }
 
 function diff(actual: string, expected: string): string {
@@ -390,7 +404,9 @@ async function runDoc(doc: DocFile, defaultSeed: unknown, update: boolean): Prom
     for (const entry of block.entries) {
       const envOverrides =
         doc.frontmatter && doc.frontmatter.env ? (doc.frontmatter.env as Record<string, string | null>) : undefined;
-      const result = await runLean(entry.command, envOverrides);
+      const result = await runLean(entry.command, envOverrides, {
+        forceFormat: looksLikeJsonOutput(entry.expected) ? undefined : "text",
+      });
       const parts = [result.stdout, result.stderr].filter(s => s.length > 0);
       const actualNorm = normalize(parts.join("\n"));
       const expectedNorm = normalize(entry.expected);

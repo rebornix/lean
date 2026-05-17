@@ -1,5 +1,27 @@
+import { detectMode } from "./mode.js";
+import { LeanError } from "../errors.js";
+
+interface OutputOpts {
+  json?: boolean;
+  format?: string;
+}
+
 export function json(data: unknown): void {
   console.log(JSON.stringify(data, null, 2));
+}
+
+export function respond<T>(opts: OutputOpts, data: T, renderHuman: (data: T) => void): void {
+  if (opts.format !== undefined && opts.format !== "json" && opts.format !== "text") {
+    throw new LeanError("invalid_argument", `Unknown output format: ${opts.format}`, {
+      action: "Use --format json or --format text",
+    });
+  }
+  const mode = detectMode({ json: opts.json, format: opts.format });
+  if (mode.agent) {
+    json(data);
+    return;
+  }
+  renderHuman(data);
 }
 
 export function table(rows: Record<string, string>[], columns?: string[]): void {
