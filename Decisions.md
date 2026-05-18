@@ -160,3 +160,25 @@ default, contradicting the "machine-friendly everywhere else" contract.
 discovering `--json` first and still receive structured stdout. Human
 users retain readable TTY output. Doc-tests now cover non-TTY JSON
 success output and isolated auth config state.
+
+### ADR-010: Package agent workflows as a Codex plugin
+**Date**: 2026-05-17
+**Status**: Accepted
+**Context**: `lean` already ships an agent-oriented root `SKILL.md`, but
+repo users need a way to install the workflow through Codex's plugin
+surface. The CLI contract is the product boundary; duplicating Linear
+operations in a separate integration would add maintenance before the
+CLI surface has stabilized.
+**Decision**:
+- Add a repo-local Codex marketplace at `.agents/plugins/marketplace.json`.
+- Package the first plugin under `plugins/lean-linear/` with the
+  required `.codex-plugin/plugin.json` manifest.
+- Start with a bundled `lean-linear` skill that teaches agents how to
+  use the CLI, its non-TTY JSON contract, auth flow, and write-safety
+  expectations.
+- Defer bundled MCP server configuration until a concrete workflow needs
+  tool-call wrapping instead of shelling out to `lean`.
+**Consequences**: Codex can install the workflow from this repository
+without changing the CLI runtime. The plugin remains a thin packaging
+layer over the CLI, so command behaviour stays documented and tested in
+the existing docs and doc-tests.
