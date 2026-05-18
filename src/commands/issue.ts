@@ -2,6 +2,13 @@ import type { Command } from "commander";
 import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { getClient } from "../api/client.js";
+import {
+  PROJECT_FIELDS,
+  findTeamByKey,
+  projectPayload,
+  resolveProjectForTeam,
+  type LinearProjectSummary,
+} from "../api/projects.js";
 import { table, respond } from "../output/index.js";
 import { priorityLabel } from "../output/priority.js";
 import { LeanError } from "../errors.js";
@@ -16,6 +23,12 @@ interface RawIssue {
   team?: { id: string; key: string } | null;
   state?: { id: string; name: string } | null;
   assignee?: { id: string; name: string; email: string } | null;
+}
+
+interface CreatedIssue {
+  identifier: string;
+  title: string;
+  project?: LinearProjectSummary | null;
 }
 
 const ISSUE_FIELDS = `
@@ -220,6 +233,7 @@ export function registerIssueCommands(issue: Command): void {
     .option("--priority <priority>", "Priority 0-4")
     .option("--state <state>", "Workflow state name")
     .option("--assignee <assignee>", "Assignee email or @me")
+    .option("--project <project>", "Project id, name, slugId, or unique partial name")
     .option("--json", "Output as JSON")
     .option("--format <format>", "Output format: json or text")
     .action(async opts => {
@@ -229,13 +243,11 @@ export function registerIssueCommands(issue: Command): void {
         });
       }
       const client = getClient();
-      const teams = await client.teams({ filter: { key: { eq: opts.team } } });
-      const team = teams.nodes.find(t => t.key === opts.team) ?? null;
-      if (!team) {
-        throw new LeanError("not_found", `Team not found: ${opts.team}`);
-      }
+      const team = await findTeamByKey(client, opts.team);
       const description = opts.descriptionFile ? await readFile(opts.descriptionFile, "utf-8") : opts.description;
       const stateId = opts.state ? await findStateByName(client, team.id, opts.state) : undefined;
+      const hasProject = opts.project !== undefined;
+      const project = hasProject ? await resolveProjectForTeam(client, team, String(opts.project)) : undefined;
       let assigneeId: string | undefined;
       if (opts.assignee) {
         if (opts.assignee === "@me") {
@@ -247,11 +259,11 @@ export function registerIssueCommands(issue: Command): void {
         }
       }
       const result = await client.client.rawRequest<
-        { issueCreate: { issue: { identifier: string; title: string } | null } },
+        { issueCreate: { issue: CreatedIssue | null } },
         Record<string, unknown>
       >(
         `mutation Create($input: IssueCreateInput!) {
-           issueCreate(input: $input) { issue { identifier title } }
+           issueCreate(input: $input) { issue { identifier title project { ${PROJECT_FIELDS} } } }
          }`,
         {
           input: {
@@ -261,6 +273,7 @@ export function registerIssueCommands(issue: Command): void {
             priority: opts.priority ? parseInt(opts.priority) : undefined,
             stateId,
             assigneeId,
+            projectId: project?.id,
           },
         }
       );
@@ -268,8 +281,16 @@ export function registerIssueCommands(issue: Command): void {
       if (!created) {
         throw new LeanError("linear_api", "issueCreate did not return an issue");
       }
-      respond(opts, { id: created.identifier, title: created.title }, () => {
+      const payload = {
+        id: created.identifier,
+        title: created.title,
+        ...(hasProject ? { project: created.project ? projectPayload({ ...created.project, team }) : null } : {}),
+      };
+      respond(opts, payload, () => {
         console.log(`${created.identifier}: ${created.title}`);
+        if (created.project) {
+          console.log(`Project: ${created.project.name}`);
+        }
       });
     });
 

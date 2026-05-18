@@ -41,6 +41,22 @@ labels:
   - id: label-bug
     name: Bug
     team: team-eng
+projects:
+  - id: project-launch
+    name: Launch
+    slug_id: launch
+    state: started
+    team: team-eng
+  - id: project-research
+    name: Research
+    slug_id: research
+    state: planned
+    team: team-eng
+  - id: project-refactor
+    name: Refactor
+    slug_id: refactor
+    state: completed
+    team: team-eng
 issues:
   - id: issue-1
     title: First issue

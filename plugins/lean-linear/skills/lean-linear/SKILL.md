@@ -73,6 +73,12 @@ List assigned work:
 lean issue list --assignee @me --limit 20
 ```
 
+List projects before creating project-scoped issues:
+
+```bash
+lean project list --team ENG
+```
+
 Inspect an issue:
 
 ```bash
@@ -82,7 +88,7 @@ lean issue view ENG-1
 Create an issue with explicit required fields:
 
 ```bash
-lean issue create --team ENG --title "Fix issue sync failure" --description-file /tmp/issue-body.md
+lean issue create --team ENG --project Research --title "Fix issue sync failure" --description-file /tmp/issue-body.md
 ```
 
 Update an issue:
@@ -105,5 +111,6 @@ lean api --query '{ viewer { id name email } }'
 - Treat `auth_required` as setup state and explain the needed auth command.
 - Preview destructive or externally visible writes unless the user asked for the exact mutation.
 - Put long descriptions and comments in a temporary file and pass `--description-file` or `--body-file`.
+- For project-scoped work, inspect `lean project list --team <key>` and pass `--project <id-or-name>` to `lean issue create`.
 - Keep command output parsing JSON-based for non-TTY execution.
 - If a `lean` command lacks the needed operation, use `lean api` before reaching for another Linear client.

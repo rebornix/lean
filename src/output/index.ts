@@ -36,6 +36,11 @@ export function table(rows: Record<string, string>[], columns?: string[]): void 
   console.log(header);
   console.log(widths.map(w => "─".repeat(w)).join("  "));
   for (const row of rows) {
-    console.log(cols.map((c, i) => (row[c] ?? "").padEnd(widths[i]!)).join("  "));
+    console.log(
+      cols
+        .map((c, i) => (row[c] ?? "").padEnd(widths[i]!))
+        .join("  ")
+        .trimEnd()
+    );
   }
 }

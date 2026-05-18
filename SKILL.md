@@ -37,13 +37,16 @@ lean auth login [--api-key <key>] [--json] [--format text]
 lean auth status [--json] [--format text]
 lean auth logout [--json] [--format text]
 
+lean project list [--team <key>] [--state <name>] [--limit N]
+                  [--json] [--format text]
+
 lean issue list [--team <key>] [--state <name>] [--assignee @me|<email>]
                 [--priority 0..4] [--limit N] [--json] [--format text]
 lean issue view <ENG-1|UUID> [--json] [--format text] [--web]
 lean issue create --team <key> --title <text>
                   [--description <text> | --description-file <path>]
                   [--priority 0..4] [--state <name>] [--assignee @me|<email>]
-                  [--json] [--format text]
+                  [--project <id|name|slug>] [--json] [--format text]
 lean issue edit <ENG-1|UUID>
                 [--title <text>] [--state <name>]
                 [--assignee @me|<email>] [--priority 0..4]
@@ -86,10 +89,15 @@ Filtering is real (the local emulator uses `LEAN_EMULATOR_STRICT=1` to
 fail loudly on bad shapes). Anything more complex than these flags goes
 through `lean api`.
 
+Use `lean project list --team <key>` before creating issues that need a
+project. `lean issue create --project <ref>` accepts a project id, exact
+name, slugId, or unique partial name within the target team.
+
 ## Identifier resolution
 
 Issues accept either the team-scoped key (`ENG-1`) or a UUID. Most other
-commands accept emails (assignees) or workflow-state names (states).
+commands accept emails (assignees), workflow-state names (states), and
+project ids/names/slugIds (projects).
 Internal UUIDs are always accepted at the boundary.
 
 ## Raw GraphQL escape hatch (`lean api`)

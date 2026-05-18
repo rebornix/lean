@@ -32,7 +32,8 @@ lean auth status
 lean issue list                      # defaults to your assigned issues
 lean issue list --all                # the full board
 lean issue view ENG-1
-lean issue create --team ENG --title "Fix the bug"
+lean project list --team ENG
+lean issue create --team ENG --project Launch --title "Fix the bug"
 lean issue edit ENG-1 --state Done
 lean issue close ENG-1
 lean issue comment ENG-1 --body "Fixed in PR #42"

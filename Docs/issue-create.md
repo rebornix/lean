@@ -18,6 +18,40 @@ $ lean issue create --team ENG --title "Add docs" --state "In Progress" --assign
 ENG-5: Add docs
 ```
 
+## Create with project
+
+```console
+$ lean issue create --team ENG --project launch --title "Plan launch checklist" --json
+{
+  "id": "ENG-5",
+  "title": "Plan launch checklist",
+  "project": {
+    "id": "project-launch",
+    "name": "Launch",
+    "slugId": "launch",
+    "state": "started",
+    "team": "ENG"
+  }
+}
+```
+
+## Create with unique partial project
+
+```console
+$ lean issue create --team ENG --project Res --title "Research spike" --json
+{
+  "id": "ENG-5",
+  "title": "Research spike",
+  "project": {
+    "id": "project-research",
+    "name": "Research",
+    "slugId": "research",
+    "state": "planned",
+    "team": "ENG"
+  }
+}
+```
+
 ## Create with --json
 
 ```console
@@ -48,5 +82,45 @@ $ lean issue create --team NOPE --title "x"
   "error": "not_found",
   "message": "Team not found: NOPE",
   "exit_code": 1
+}
+```
+
+## Unknown project errors
+
+```console
+$ lean issue create --team ENG --project Missing --title "x"
+{
+  "error": "not_found",
+  "message": "Project not found for team ENG: Missing",
+  "exit_code": 1,
+  "action": "Use a project id, exact name, slugId, or a unique partial name."
+}
+```
+
+## Ambiguous project errors
+
+```console
+$ lean issue create --team ENG --project Re --title "x"
+{
+  "error": "invalid_argument",
+  "message": "Project reference is ambiguous for team ENG: Re",
+  "exit_code": 1,
+  "action": "Use a project id or slugId instead of a partial name.",
+  "details": {
+    "matches": [
+      {
+        "id": "project-research",
+        "name": "Research",
+        "slugId": "research",
+        "state": "planned"
+      },
+      {
+        "id": "project-refactor",
+        "name": "Refactor",
+        "slugId": "refactor",
+        "state": "completed"
+      }
+    ]
+  }
 }
 ```
