@@ -79,10 +79,11 @@ Each spec should contain:
 
 ```
 lean auth login|status|logout
+lean project list [--team] [--state] [--limit] [--json]
 lean issue list [--team] [--assignee @me] [--state] [--priority] [--limit] [--json]
-lean issue create [--team] [--title] [--description] [--assignee] [--priority] [--label] [--state]
+lean issue create [--team] [--title] [--description] [--assignee] [--priority] [--state] [--project]
 lean issue view <ID> [--json] [--web]
-lean issue edit <ID> [--title] [--state] [--assignee] [--priority] [--label]
+lean issue edit <ID> [--title] [--state] [--assignee] [--priority]
 lean issue close <ID>
 lean issue comment <ID> [--body]
 lean config set|get <key> <value>

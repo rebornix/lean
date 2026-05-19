@@ -11,7 +11,7 @@ that filter. Combine with `--team`, `--state`, `--priority`, `--limit`,
 $ lean issue list
 ID     Title         State  Priority  Assignee
 ─────  ────────────  ─────  ────────  ────────
-ENG-1  First issue   Todo   None      Alice   
+ENG-1  First issue   Todo   None      Alice
 ENG-4  Refactor API  Done   High      Alice
 ```
 
@@ -21,9 +21,9 @@ ENG-4  Refactor API  Done   High      Alice
 $ lean issue list --all
 ID     Title          State        Priority  Assignee
 ─────  ─────────────  ───────────  ────────  ────────
-ENG-1  First issue    Todo         None      Alice   
-ENG-2  Login bug      In Progress  Urgent    Bob     
-ENG-3  Add dark mode  Todo         Medium    Bob     
+ENG-1  First issue    Todo         None      Alice
+ENG-2  Login bug      In Progress  Urgent    Bob
+ENG-3  Add dark mode  Todo         Medium    Bob
 ENG-4  Refactor API   Done         High      Alice
 ```
 
@@ -33,9 +33,9 @@ ENG-4  Refactor API   Done         High      Alice
 $ lean issue list --assignee anyone
 ID     Title          State        Priority  Assignee
 ─────  ─────────────  ───────────  ────────  ────────
-ENG-1  First issue    Todo         None      Alice   
-ENG-2  Login bug      In Progress  Urgent    Bob     
-ENG-3  Add dark mode  Todo         Medium    Bob     
+ENG-1  First issue    Todo         None      Alice
+ENG-2  Login bug      In Progress  Urgent    Bob
+ENG-3  Add dark mode  Todo         Medium    Bob
 ENG-4  Refactor API   Done         High      Alice
 ```
 
@@ -45,7 +45,7 @@ ENG-4  Refactor API   Done         High      Alice
 $ lean issue list --team ENG
 ID     Title         State  Priority  Assignee
 ─────  ────────────  ─────  ────────  ────────
-ENG-1  First issue   Todo   None      Alice   
+ENG-1  First issue   Todo   None      Alice
 ENG-4  Refactor API  Done   High      Alice
 ```
 
@@ -64,7 +64,7 @@ ENG-1  First issue  Todo   None      Alice
 $ lean issue list --assignee bob@acme.com
 ID     Title          State        Priority  Assignee
 ─────  ─────────────  ───────────  ────────  ────────
-ENG-2  Login bug      In Progress  Urgent    Bob     
+ENG-2  Login bug      In Progress  Urgent    Bob
 ENG-3  Add dark mode  Todo         Medium    Bob
 ```
 

@@ -13,6 +13,7 @@ lean - CLI for Linear project management
 Commands:
   auth     Authentication (login, status, logout)
   issue    Issues (list, view, create, edit, close, comment)
+  project  Projects (list)
   api      Send a raw GraphQL request to Linear
   usage    Show this help, or `lean <cmd> usage` for command details
 
@@ -46,7 +47,7 @@ lean issue - Issue management
           --json, --format text)
   view    Show one issue (--json, --format text, --web)
   create  Create an issue (--team, --title, --description, --description-file,
-          --priority, --state, --assignee, --json, --format text)
+          --priority, --state, --assignee, --project, --json, --format text)
   edit    Update an issue (--title, --state, --assignee, --priority, --json,
           --format text)
   close   Move an issue to its team's first completed state (--json, --format text)
@@ -56,6 +57,19 @@ Identifiers: ENG-1 (team key + number) or a UUID.
 
 Non-TTY output defaults to JSON; pass --format text for tables/messages.
 See Docs/issue-*.md for examples.
+```
+
+## Project usage
+
+```console
+$ lean project usage
+lean project - Project discovery
+
+  list    List projects (--team, --state, --limit, --json, --format text)
+
+Use `lean project list --team ENG` before `lean issue create --project <name>`
+when an issue should be assigned to a Linear project. Project references accept
+an id, exact name, slugId, or unique partial name.
 ```
 
 ## API usage

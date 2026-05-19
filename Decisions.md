@@ -182,3 +182,22 @@ CLI surface has stabilized.
 without changing the CLI runtime. The plugin remains a thin packaging
 layer over the CLI, so command behaviour stays documented and tested in
 the existing docs and doc-tests.
+
+### ADR-011: Project discovery and issue assignment
+**Date**: 2026-05-18
+**Status**: Accepted
+**Context**: Agents creating Linear issues need to place work in the
+right project without dropping down to raw GraphQL. `lean issue create`
+could set team, state, assignee, and priority, but not project, so agents
+had to manually query project IDs and construct `issueCreate` mutations.
+**Decision**:
+- Add `lean project list` for lightweight project discovery, with team,
+  state, limit, JSON, and text output controls.
+- Add `lean issue create --project <ref>` where `<ref>` resolves within
+  the target team by project id, exact name, slugId, or unique partial
+  name.
+- Fail ambiguous project references with `invalid_argument` and include
+  candidate details in agent-mode errors.
+**Consequences**: Issue creation remains the high-level path for agents.
+Raw GraphQL remains available as an escape hatch, but project assignment
+no longer requires it for normal workflows.
