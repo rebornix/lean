@@ -1,8 +1,9 @@
 # Lean Linear Codex Plugin
 
 This plugin packages the `lean` agent workflow for Codex. It is intentionally
-skill-only: the CLI remains the integration boundary, and MCP can be added later
-when a workflow needs tool-call wrapping.
+skill-only: the CLI remains the integration boundary. The skill covers the
+agent-oriented command surface for team/state discovery, issue search, rich
+issue create/edit, child-tree inspection, and bulk issue workflows.
 
 The plugin does not bundle or install the `lean` binary. Agents are instructed to
 use an existing `lean` command when present, build the CLI from a local

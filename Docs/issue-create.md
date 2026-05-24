@@ -25,13 +25,18 @@ $ lean issue create --team ENG --project launch --title "Plan launch checklist" 
 {
   "id": "ENG-5",
   "title": "Plan launch checklist",
+  "state": null,
+  "priority": 0,
+  "priorityLabel": "None",
+  "assignee": null,
   "project": {
     "id": "project-launch",
     "name": "Launch",
     "slugId": "launch",
     "state": "started",
     "team": "ENG"
-  }
+  },
+  "url": "http://localhost:4100/ENG/issue/ENG-5/plan-launch-checklist"
 }
 ```
 
@@ -42,13 +47,33 @@ $ lean issue create --team ENG --project Res --title "Research spike" --json
 {
   "id": "ENG-5",
   "title": "Research spike",
+  "state": null,
+  "priority": 0,
+  "priorityLabel": "None",
+  "assignee": null,
   "project": {
     "id": "project-research",
     "name": "Research",
     "slugId": "research",
     "state": "planned",
     "team": "ENG"
-  }
+  },
+  "url": "http://localhost:4100/ENG/issue/ENG-5/research-spike"
+}
+```
+
+## Create with priority label
+
+```console
+$ lean issue create --team ENG --title "Prioritized work" --priority High --json
+{
+  "id": "ENG-5",
+  "title": "Prioritized work",
+  "state": null,
+  "priority": 2,
+  "priorityLabel": "High",
+  "assignee": null,
+  "url": "http://localhost:4100/ENG/issue/ENG-5/prioritized-work"
 }
 ```
 
@@ -58,7 +83,24 @@ $ lean issue create --team ENG --project Res --title "Research spike" --json
 $ lean issue create --team ENG --title "JSON output check" --json
 {
   "id": "ENG-5",
-  "title": "JSON output check"
+  "title": "JSON output check",
+  "state": null,
+  "priority": 0,
+  "priorityLabel": "None",
+  "assignee": null,
+  "url": "http://localhost:4100/ENG/issue/ENG-5/json-output-check"
+}
+```
+
+## Invalid due date errors
+
+```console
+$ lean issue create --team ENG --title "Bad date" --due-date tomorrow --json
+{
+  "error": "invalid_argument",
+  "message": "Invalid --due-date: tomorrow",
+  "exit_code": 1,
+  "action": "Use YYYY-MM-DD."
 }
 ```
 

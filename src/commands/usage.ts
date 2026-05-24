@@ -5,8 +5,9 @@ const ROOT_USAGE = `lean - CLI for Linear project management
 
 Commands:
   auth     Authentication (login, status, logout)
-  issue    Issues (list, view, create, edit, close, comment)
+  issue    Issues (list, search, view, create, edit, children, tree, bulk)
   project  Projects (list)
+  team     Teams (list, view)
   api      Send a raw GraphQL request to Linear
   usage    Show this help, or \`lean <cmd> usage\` for command details
 
@@ -28,11 +29,19 @@ const ISSUE_USAGE = `lean issue - Issue management
 
   list    List issues (--team, --state, --assignee, --priority, --limit,
           --json, --format text)
+  search  Search issues (--team, --state, --assignee, --priority, --limit,
+          --json, --format text)
   view    Show one issue (--json, --format text, --web)
+  children List child issues (--limit, --state, --json, --format text)
+  tree    Show one issue plus one level of children (--limit, --state, --json)
   create  Create an issue (--team, --title, --description, --description-file,
-          --priority, --state, --assignee, --project, --json, --format text)
-  edit    Update an issue (--title, --state, --assignee, --priority, --json,
-          --format text)
+          --priority, --state, --assignee, --project, --parent, --due-date,
+          --sub-issue-sort-order, --json, --format text)
+  edit    Update an issue (--title, --description, --description-file, --state,
+          --assignee, --priority, --project/--no-project, --parent/--no-parent,
+          --due-date, --sub-issue-sort-order, --json, --format text)
+  bulk-create Create issues from JSON (--file, --continue-on-error, --json)
+  bulk-edit   Update issues from JSON (--file, --continue-on-error, --json)
   close   Move an issue to its team's first completed state (--json, --format text)
   comment Add a comment (--body, --body-file, --json, --format text)
 
@@ -48,6 +57,14 @@ const PROJECT_USAGE = `lean project - Project discovery
 Use \`lean project list --team ENG\` before \`lean issue create --project <name>\`
 when an issue should be assigned to a Linear project. Project references accept
 an id, exact name, slugId, or unique partial name.`;
+
+const TEAM_USAGE = `lean team - Team discovery
+
+  list    List teams (--limit, --json, --format text)
+  view    Show one team (--states, --projects, --json, --format text)
+
+Use \`lean team view ENG --states --projects --json\` before creating or
+moving issues when you need team, state, and project IDs.`;
 
 const API_USAGE = `lean api - Send a raw GraphQL request to Linear
 
@@ -73,6 +90,8 @@ export function usageText(topic?: string): string {
       return ISSUE_USAGE;
     case "project":
       return PROJECT_USAGE;
+    case "team":
+      return TEAM_USAGE;
     case "api":
       return API_USAGE;
     default:
@@ -86,13 +105,13 @@ export function registerUsageCommand(program: Command): void {
   program
     .command("usage")
     .description("Show token-efficient usage for lean or a subcommand")
-    .argument("[topic]", "auth | issue | project | api")
+    .argument("[topic]", "auth | issue | project | team | api")
     .action((topic?: string) => {
       console.log(usageText(topic));
     });
 }
 
-export function registerSubcommandUsage(parent: Command, topic: "auth" | "issue" | "project" | "api"): void {
+export function registerSubcommandUsage(parent: Command, topic: "auth" | "issue" | "project" | "team" | "api"): void {
   parent
     .command("usage")
     .description(`Show token-efficient usage for lean ${topic}`)

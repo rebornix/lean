@@ -47,6 +47,7 @@ Prefer the token-budgeted usage commands before falling back to full help:
 ```bash
 lean usage
 lean issue usage
+lean team usage
 lean auth usage
 lean --help
 ```
@@ -76,27 +77,43 @@ lean issue list --assignee @me --limit 20
 List projects before creating project-scoped issues:
 
 ```bash
+lean team view ENG --states --projects --json
 lean project list --team ENG
+```
+
+Search for duplicates before creating a new issue:
+
+```bash
+lean issue search "sync failure" --team ENG --assignee anyone --json
 ```
 
 Inspect an issue:
 
 ```bash
 lean issue view ENG-1
+lean issue children ENG-1 --json
+lean issue tree ENG-1 --json
 ```
 
 Create an issue with explicit required fields:
 
 ```bash
-lean issue create --team ENG --project Research --title "Fix issue sync failure" --description-file /tmp/issue-body.md
+lean issue create --team ENG --project Research --priority High --due-date 2026-05-29 --title "Fix issue sync failure" --description-file /tmp/issue-body.md
 ```
 
 Update an issue:
 
 ```bash
-lean issue edit ENG-1 --state "In Progress"
+lean issue edit ENG-1 --state "In Progress" --parent ENG-2 --sub-issue-sort-order 1000
 lean issue comment ENG-1 --body-file /tmp/comment.md
 lean issue close ENG-1
+```
+
+Bulk create or edit from JSON:
+
+```bash
+lean issue bulk-create --file /tmp/issues.json --json
+lean issue bulk-edit --file /tmp/updates.json --json
 ```
 
 Use the GraphQL escape hatch when the CLI does not expose a needed operation:
@@ -112,5 +129,7 @@ lean api --query '{ viewer { id name email } }'
 - Preview destructive or externally visible writes unless the user asked for the exact mutation.
 - Put long descriptions and comments in a temporary file and pass `--description-file` or `--body-file`.
 - For project-scoped work, inspect `lean project list --team <key>` and pass `--project <id-or-name>` to `lean issue create`.
+- Use `lean team view <key> --states --projects --json` for state/project discovery and `lean issue search` before creating possible duplicates.
+- Use first-class `--parent`, `--due-date`, `--sub-issue-sort-order`, `bulk-create`, and `bulk-edit` commands before dropping to raw GraphQL.
 - Keep command output parsing JSON-based for non-TTY execution.
 - If a `lean` command lacks the needed operation, use `lean api` before reaching for another Linear client.

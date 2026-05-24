@@ -37,20 +37,37 @@ lean auth login [--api-key <key>] [--json] [--format text]
 lean auth status [--json] [--format text]
 lean auth logout [--json] [--format text]
 
+lean team list [--limit N] [--json] [--format text]
+lean team view <key|UUID> [--states] [--projects] [--json] [--format text]
+
 lean project list [--team <key>] [--state <name>] [--limit N]
                   [--json] [--format text]
 
 lean issue list [--team <key>] [--state <name>] [--assignee @me|<email>]
                 [--priority 0..4] [--limit N] [--json] [--format text]
+lean issue search <query> [--team <key>] [--state <name>]
+                  [--assignee @me|anyone|<email>] [--priority 0..4|label]
+                  [--limit N] [--json] [--format text]
 lean issue view <ENG-1|UUID> [--json] [--format text] [--web]
+lean issue children <ENG-1|UUID> [--limit N] [--state <name>]
+                    [--json] [--format text]
+lean issue tree <ENG-1|UUID> [--limit N] [--state <name>]
+                [--json] [--format text]
 lean issue create --team <key> --title <text>
                   [--description <text> | --description-file <path>]
-                  [--priority 0..4] [--state <name>] [--assignee @me|<email>]
-                  [--project <id|name|slug>] [--json] [--format text]
+                  [--priority 0..4|label] [--state <name>]
+                  [--assignee @me|<email>] [--project <id|name|slug>]
+                  [--parent <ENG-1|UUID>] [--due-date YYYY-MM-DD]
+                  [--sub-issue-sort-order N] [--json] [--format text]
 lean issue edit <ENG-1|UUID>
-                [--title <text>] [--state <name>]
-                [--assignee @me|<email>] [--priority 0..4]
+                [--title <text>] [--description <text> | --description-file <path>]
+                [--state <name>] [--assignee @me|<email>]
+                [--priority 0..4|label] [--project <ref> | --no-project]
+                [--parent <ENG-1|UUID> | --no-parent] [--due-date YYYY-MM-DD]
+                [--sub-issue-sort-order N]
                 [--json] [--format text]
+lean issue bulk-create --file <json> [--continue-on-error] [--json] [--format text]
+lean issue bulk-edit --file <json> [--continue-on-error] [--json] [--format text]
 lean issue close <ENG-1|UUID> [--json] [--format text]
 lean issue comment <ENG-1|UUID>
                    [--body <text> | --body-file <path>] [--json] [--format text]
@@ -92,6 +109,19 @@ through `lean api`.
 Use `lean project list --team <key>` before creating issues that need a
 project. `lean issue create --project <ref>` accepts a project id, exact
 name, slugId, or unique partial name within the target team.
+Use `lean team view <key> --states --projects --json` when you need IDs
+for states and projects.
+
+Use `lean issue search <query> --team <key> --assignee anyone --json`
+before creating issues to avoid duplicates. Use `lean issue children` or
+`lean issue tree` to verify parent/child work.
+
+Bulk input files:
+
+```json
+{"defaults":{"team":"ENG","state":"Todo"},"issues":[{"title":"One"}]}
+{"updates":[{"id":"ENG-1","priority":"Urgent","dueDate":"2026-05-29"}]}
+```
 
 ## Identifier resolution
 
