@@ -446,32 +446,31 @@ interface BulkResult<T> {
 
 ## Acceptance Criteria
 
-- [ ] `lean team list --json` returns team id, key, and name.
-- [ ] `lean team view HAL --states --json` returns workflow state id,
+- [x] `lean team list --json` returns team id, key, and name.
+- [x] `lean team view HAL --states --json` returns workflow state id,
       name, type, and position.
-- [ ] `lean issue search <query> --team HAL --json` returns matching
+- [x] `lean issue search <query> --team HAL --json` returns matching
       issues without requiring `jq`.
-- [ ] `lean issue children HAL-204 --json` returns one-level child issue
+- [x] `lean issue children HAL-204 --json` returns one-level child issue
       rows with state, priority label, assignee, due date, and URL.
-- [ ] `lean issue tree HAL-204 --json` returns the parent issue plus
+- [x] `lean issue tree HAL-204 --json` returns the parent issue plus
       one-level children.
-- [ ] `lean issue create` supports `--parent`, `--due-date`,
+- [x] `lean issue create` supports `--parent`, `--due-date`,
       `--sub-issue-sort-order`, and priority labels.
-- [ ] `lean issue edit` supports description replacement, due date,
+- [x] `lean issue edit` supports description replacement, due date,
       parent, project, and sub-issue order fields.
-- [ ] `lean issue bulk-create --file` creates multiple issues with
+- [x] `lean issue bulk-create --file` creates multiple issues with
       defaults, per-item overrides, and partial-failure reporting.
-- [ ] `lean issue bulk-edit --file` updates multiple issues with
+- [x] `lean issue bulk-edit --file` updates multiple issues with
       per-item updates and partial-failure reporting.
-- [ ] All new commands support non-TTY JSON by default, `--json`, and
+- [x] All new commands support non-TTY JSON by default, `--json`, and
       `--format text`.
-- [ ] Docs are added or updated under `Docs/` with executable console
+- [x] Docs are added or updated under `Docs/` with executable console
       examples for search, children/tree, rich create/edit, and bulk
       workflows.
-- [ ] `README.md`, `SKILL.md`, and plugin skill docs are updated for
+- [x] `README.md`, `SKILL.md`, and plugin skill docs are updated for
       user-visible command changes.
-- [ ] Doc-tests cover happy paths and at least one validation failure
+- [x] Doc-tests cover happy paths and at least one validation failure
       for each new command group.
-- [ ] `Decisions.md` records the SDK/raw-GraphQL policy for this command
+- [x] `Decisions.md` records the SDK/raw-GraphQL policy for this command
       surface before implementation lands.
-
