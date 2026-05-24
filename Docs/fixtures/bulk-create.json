@@ -1,0 +1,18 @@
+{
+  "defaults": {
+    "team": "ENG",
+    "state": "Todo",
+    "assignee": "@me",
+    "priority": "High"
+  },
+  "issues": [
+    {
+      "title": "Bulk alpha"
+    },
+    {
+      "title": "Bulk beta",
+      "assignee": "bob@acme.com",
+      "priority": "Low"
+    }
+  ]
+}

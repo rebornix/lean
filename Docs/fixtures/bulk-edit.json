@@ -1,0 +1,13 @@
+{
+  "updates": [
+    {
+      "id": "ENG-1",
+      "priority": "Urgent"
+    },
+    {
+      "id": "ENG-2",
+      "state": "Done",
+      "assignee": "@me"
+    }
+  ]
+}

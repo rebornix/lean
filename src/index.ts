@@ -9,6 +9,7 @@ import { Command } from "commander";
 import { registerAuthCommands } from "./commands/auth.js";
 import { registerIssueCommands } from "./commands/issue.js";
 import { registerProjectCommands } from "./commands/project.js";
+import { registerTeamCommands } from "./commands/team.js";
 import { registerApiCommand } from "./commands/api.js";
 import { registerUsageCommand, registerSubcommandUsage } from "./commands/usage.js";
 import { reportError } from "./reporter.js";
@@ -28,6 +29,10 @@ registerSubcommandUsage(issue, "issue");
 const project = program.command("project").description("Project discovery");
 registerProjectCommands(project);
 registerSubcommandUsage(project, "project");
+
+const team = program.command("team").description("Team discovery");
+registerTeamCommands(team);
+registerSubcommandUsage(team, "team");
 
 registerApiCommand(program);
 const apiCmd = program.commands.find(c => c.name() === "api");

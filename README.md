@@ -29,12 +29,17 @@ Get an API key at <https://linear.app/settings/api>, then:
 export LINEAR_API_KEY=lin_api_...
 
 lean auth status
+lean team list
+lean team view ENG --states --projects
 lean issue list                      # defaults to your assigned issues
 lean issue list --all                # the full board
+lean issue search "Login" --team ENG --assignee anyone
 lean issue view ENG-1
+lean issue children ENG-1
 lean project list --team ENG
-lean issue create --team ENG --project Launch --title "Fix the bug"
-lean issue edit ENG-1 --state Done
+lean issue create --team ENG --project Launch --priority High --title "Fix the bug"
+lean issue edit ENG-1 --state Done --due-date 2026-05-29
+lean issue bulk-create --file issues.json --json
 lean issue close ENG-1
 lean issue comment ENG-1 --body "Fixed in PR #42"
 

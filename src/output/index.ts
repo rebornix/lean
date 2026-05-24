@@ -33,7 +33,7 @@ export function table(rows: Record<string, string>[], columns?: string[]): void 
   const widths = cols.map(col => Math.max(col.length, ...rows.map(r => (r[col] ?? "").length)));
 
   const header = cols.map((c, i) => c.padEnd(widths[i]!)).join("  ");
-  console.log(header);
+  console.log(header.trimEnd());
   console.log(widths.map(w => "─".repeat(w)).join("  "));
   for (const row of rows) {
     console.log(

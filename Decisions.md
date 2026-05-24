@@ -201,3 +201,25 @@ had to manually query project IDs and construct `issueCreate` mutations.
 **Consequences**: Issue creation remains the high-level path for agents.
 Raw GraphQL remains available as an escape hatch, but project assignment
 no longer requires it for normal workflows.
+
+### ADR-012: Agent Workflow Command Surface
+**Date**: 2026-05-24
+**Status**: Accepted
+**Context**: Session audits showed agents repeatedly composing several
+`lean api` calls or one-off scripts to discover team/state IDs, search
+for duplicates, create parented issues, update due dates and ordering,
+and verify child issue state.
+**Decision**:
+- Add `lean team list/view` for team, state, and project discovery.
+- Add `lean issue search`, `children`, `tree`, `bulk-create`, and
+  `bulk-edit`.
+- Extend `issue create` and `issue edit` with parent, due date,
+  sub-issue sort order, description replacement, project clearing, and
+  priority labels.
+- Keep raw GraphQL fragments for stable CLI output and tree-shaped reads,
+  while using SDK helpers where existing command code already depends on
+  them for users, teams, states, and projects.
+**Consequences**: Common agent workflows become one or two high-level
+commands instead of bespoke GraphQL. The raw API remains available for
+rare Linear operations, but it is no longer the default path for issue
+creation, bulk updates, or parent/child verification.
