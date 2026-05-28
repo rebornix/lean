@@ -365,6 +365,34 @@ function diff(actual: string, expected: string): string {
   return out.join("\n");
 }
 
+function substituteCommandVariables(command: string, variables: Record<string, string>): string {
+  return command.replace(/<last-id>/g, () => {
+    const id = variables["last-id"];
+    if (!id) {
+      throw new Error("Command uses <last-id> before any JSON output with an id field");
+    }
+    return id;
+  });
+}
+
+function recordCommandVariables(stdout: string, variables: Record<string, string>): void {
+  if (stdout.length === 0) {
+    return;
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stdout);
+  } catch {
+    return;
+  }
+  if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) && "id" in parsed) {
+    const id = (parsed as { id?: unknown }).id;
+    if (typeof id === "string" && id.length > 0) {
+      variables["last-id"] = id;
+    }
+  }
+}
+
 interface RunSummary {
   file: string;
   passed: number;
@@ -401,12 +429,15 @@ async function runDoc(doc: DocFile, defaultSeed: unknown, update: boolean): Prom
       await seedEmulator(doc.frontmatter.seed);
     }
 
+    const variables: Record<string, string> = {};
     for (const entry of block.entries) {
       const envOverrides =
         doc.frontmatter && doc.frontmatter.env ? (doc.frontmatter.env as Record<string, string | null>) : undefined;
-      const result = await runLean(entry.command, envOverrides, {
+      const command = substituteCommandVariables(entry.command, variables);
+      const result = await runLean(command, envOverrides, {
         forceFormat: looksLikeJsonOutput(entry.expected) ? undefined : "text",
       });
+      recordCommandVariables(result.stdout, variables);
       const parts = [result.stdout, result.stderr].filter(s => s.length > 0);
       const actualNorm = normalize(parts.join("\n"));
       const expectedNorm = normalize(entry.expected);

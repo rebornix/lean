@@ -223,3 +223,21 @@ and verify child issue state.
 commands instead of bespoke GraphQL. The raw API remains available for
 rare Linear operations, but it is no longer the default path for issue
 creation, bulk updates, or parent/child verification.
+
+### ADR-013: Issue comment command group
+**Date**: 2026-05-27
+**Status**: Accepted
+**Context**: Agents could add comments with `lean issue comment`, but
+reading, editing, or deleting comments still required raw GraphQL. That
+made simple issue-update workflows depend on generated comment IDs from
+manual API calls.
+**Decision**:
+- Keep `lean issue comment <issue> --body ...` as the add shorthand.
+- Add `lean issue comment add/list/view/edit/delete` for the full
+  comment lifecycle.
+- Return stable JSON fields for comments: id, issue, body, user,
+  createdAt, and updatedAt.
+- Require explicit `--confirm` for deletes.
+**Consequences**: Comment workflows can stay on the high-level CLI
+surface. Raw GraphQL remains available for uncommon comment operations,
+but agents no longer need it for normal issue comment maintenance.

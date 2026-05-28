@@ -71,6 +71,13 @@ lean issue bulk-edit --file <json> [--continue-on-error] [--json] [--format text
 lean issue close <ENG-1|UUID> [--json] [--format text]
 lean issue comment <ENG-1|UUID>
                    [--body <text> | --body-file <path>] [--json] [--format text]
+lean issue comment add <ENG-1|UUID> [--body <text> | --body-file <path>]
+                   [--json] [--format text]
+lean issue comment list <ENG-1|UUID> [--limit N] [--json] [--format text]
+lean issue comment view <comment-id> [--json] [--format text]
+lean issue comment edit <comment-id> [--body <text> | --body-file <path>]
+                   [--json] [--format text]
+lean issue comment delete <comment-id> --confirm [--json] [--format text]
 
 lean api --query <gql> | --query-file <path>
          [--variable key=value]... [--operation <name>] [--paginate]

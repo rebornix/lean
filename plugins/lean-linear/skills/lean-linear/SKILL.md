@@ -106,6 +106,8 @@ Update an issue:
 ```bash
 lean issue edit ENG-1 --state "In Progress" --parent ENG-2 --sub-issue-sort-order 1000
 lean issue comment ENG-1 --body-file /tmp/comment.md
+lean issue comment list ENG-1 --json
+lean issue comment edit <comment-id> --body-file /tmp/comment.md
 lean issue close ENG-1
 ```
 
