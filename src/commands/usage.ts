@@ -43,7 +43,7 @@ const ISSUE_USAGE = `lean issue - Issue management
   bulk-create Create issues from JSON (--file, --continue-on-error, --json)
   bulk-edit   Update issues from JSON (--file, --continue-on-error, --json)
   close   Move an issue to its team's first completed state (--json, --format text)
-  comment Add a comment (--body, --body-file, --json, --format text)
+  comment Manage comments (add/list/view/edit/delete, --json, --format text)
 
 Identifiers: ENG-1 (team key + number) or a UUID.
 

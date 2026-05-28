@@ -1,7 +1,19 @@
 import { Option, type Command } from "commander";
+import { confirm } from "@inquirer/prompts";
 import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { getClient } from "../api/client.js";
+import {
+  addIssueComment,
+  commentPayload,
+  deleteIssueComment,
+  listIssueComments,
+  readRequiredCommentBody,
+  requireComment,
+  updateIssueComment,
+  type CommentJson,
+  type LinearCommentSummary,
+} from "../api/comments.js";
 import {
   ISSUE_CORE_FIELDS,
   ISSUE_EXTENDED_FIELDS,
@@ -10,7 +22,6 @@ import {
   graphQlMessage,
   isUnsupportedGraphQlField,
   issuePayload,
-  lookupIssue,
   parseLimit,
   parsePriority,
   parseSortOrder,
@@ -380,6 +391,53 @@ function renderIssueRows(issues: LinearIssueSummary[]): void {
       Assignee: i.assignee?.name ?? "—",
     }))
   );
+}
+
+function oneLine(value: string, max = 80): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= max) {
+    return normalized;
+  }
+  return `${normalized.slice(0, max - 1)}...`;
+}
+
+function renderCommentRows(comments: LinearCommentSummary[], fallbackIssue: string): void {
+  if (comments.length === 0) {
+    console.log("No comments match.");
+    return;
+  }
+
+  table(
+    comments.map(comment => ({
+      ID: comment.id,
+      Issue: comment.issue?.identifier ?? fallbackIssue,
+      User: comment.user?.email ?? comment.user?.name ?? "-",
+      Created: comment.createdAt,
+      Body: oneLine(comment.body),
+    }))
+  );
+}
+
+function renderComment(payload: CommentJson): void {
+  console.log(`Comment: ${payload.id}`);
+  console.log(`Issue:   ${payload.issue ?? "-"}`);
+  console.log(`User:    ${payload.user ?? "-"}`);
+  console.log(`Created: ${payload.createdAt}`);
+  console.log(`Updated: ${payload.updatedAt}`);
+  console.log("");
+  console.log(payload.body);
+}
+
+async function confirmCommentDelete(commentId: string, opts: { confirm?: boolean; json?: boolean; format?: string }) {
+  if (opts.confirm) {
+    return true;
+  }
+  if (opts.json || opts.format === "json" || !process.stdin.isTTY) {
+    throw new LeanError("invalid_argument", "Deleting a comment requires --confirm", {
+      action: "Pass --confirm to delete the comment.",
+    });
+  }
+  return confirm({ message: `Delete comment ${commentId}?`, default: false });
 }
 
 function asRecord(value: unknown, label: string): JsonRecord {
@@ -788,34 +846,78 @@ export function registerIssueCommands(issue: Command): void {
       });
     });
 
-  issue
-    .command("comment <identifier>")
+  const comment = issue.command("comment").description("Manage issue comments");
+
+  comment
+    .command("add <identifier>", { isDefault: true })
     .description("Add a comment to an issue")
     .option("--body <body>", "Comment body")
     .option("--body-file <file>", "Read comment body from file")
     .option("--json", "Output as JSON")
     .option("--format <format>", "Output format: json or text")
     .action(async (identifier: string, opts) => {
-      const body = opts.bodyFile ? await readFile(opts.bodyFile, "utf-8") : opts.body;
-      if (!body) {
-        throw new LeanError("missing_required_flag", "--body or --body-file is required", {
-          action: "Provide --body <text> or --body-file <path>",
-        });
+      const body = await readRequiredCommentBody(opts);
+      const created = await addIssueComment(getClient(), identifier, body);
+      const payload = commentPayload(created, identifier);
+      respond(opts, payload, () => {
+        console.log(`Commented on ${payload.issue ?? identifier}`);
+      });
+    });
+
+  comment
+    .command("list <identifier>")
+    .description("List comments on an issue")
+    .option("--limit <n>", "Max results", "25")
+    .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
+    .action(async (identifier: string, opts) => {
+      const limit = parseLimit(opts.limit);
+      const result = await listIssueComments(getClient(), identifier, { first: limit });
+      const payload = result.comments.map(item => commentPayload(item, result.issue));
+      respond(opts, payload, () => renderCommentRows(result.comments, result.issue));
+    });
+
+  comment
+    .command("view <comment-id>")
+    .description("View a comment")
+    .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
+    .action(async (commentId: string, opts) => {
+      const found = await requireComment(getClient(), commentId);
+      const payload = commentPayload(found);
+      respond(opts, payload, renderComment);
+    });
+
+  comment
+    .command("edit <comment-id>")
+    .description("Edit a comment")
+    .option("--body <body>", "New comment body")
+    .option("--body-file <file>", "Read new comment body from file")
+    .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
+    .action(async (commentId: string, opts) => {
+      const body = await readRequiredCommentBody(opts);
+      const updated = await updateIssueComment(getClient(), commentId, body);
+      const payload = commentPayload(updated);
+      respond(opts, payload, () => {
+        console.log(`Updated comment ${payload.id}`);
+      });
+    });
+
+  comment
+    .command("delete <comment-id>")
+    .description("Delete a comment")
+    .option("--confirm", "Confirm deletion")
+    .option("--json", "Output as JSON")
+    .option("--format <format>", "Output format: json or text")
+    .action(async (commentId: string, opts) => {
+      if (!(await confirmCommentDelete(commentId, opts))) {
+        console.log("Canceled.");
+        return;
       }
-      const client = getClient();
-      const iss = await lookupIssue(client, identifier);
-      if (!iss) {
-        throw new LeanError("not_found", `Issue not found: ${identifier}`);
-      }
-      const result = await client.client.rawRequest(
-        `mutation Comment($input: CommentCreateInput!) {
-           commentCreate(input: $input) { comment { id } }
-         }`,
-        { input: { issueId: iss.id, body } }
-      );
-      throwRawGraphQlErrors(result);
-      respond(opts, { issue: iss.identifier, body }, () => {
-        console.log(`Commented on ${iss.identifier}`);
+      const deleted = await deleteIssueComment(getClient(), commentId);
+      respond(opts, deleted, () => {
+        console.log(`Deleted comment ${deleted.id}`);
       });
     });
 }

@@ -42,6 +42,8 @@ lean issue edit ENG-1 --state Done --due-date 2026-05-29
 lean issue bulk-create --file issues.json --json
 lean issue close ENG-1
 lean issue comment ENG-1 --body "Fixed in PR #42"
+lean issue comment list ENG-1 --json
+lean issue comment edit <comment-id> --body "Updated note"
 
 lean api --query '{ viewer { id name } }'   # raw GraphQL escape hatch
 ```
