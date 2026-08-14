@@ -28,7 +28,8 @@
     "SKILL.md",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "CHANGELOG.zh-CN.md"
   ],
   "engines": {
     "node": ">=20"
