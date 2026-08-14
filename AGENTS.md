@@ -179,3 +179,45 @@ git rebase upstream/main
 pnpm -F @emulators/linear test
 git push origin lean-extensions
 ```
+
+## Cursor Cloud specific instructions
+
+The startup update script runs `npm ci` (which also builds `lean` via the
+`prepare` hook) and ensures the Linear emulator is cloned and built.
+
+- **Emulator lives at `$HOME/emulate`, not `../emulate`.** The repo root is
+  `/workspace`, so the doc-test default of `../emulate` resolves to `/emulate`,
+  which is not writable in this sandbox. The emulator is cloned to
+  `$HOME/emulate` and the doc-test runner is pointed at it via the
+  `LEAN_EMULATOR_DIR` environment variable.
+- **Run doc-tests with the env var set explicitly**, since non-login shells do
+  not inherit it:
+
+  ```bash
+  LEAN_EMULATOR_DIR="$HOME/emulate" npm run test:docs
+  # or the full pre-flight:
+  LEAN_EMULATOR_DIR="$HOME/emulate" npm run check
+  ```
+
+  `LEAN_EMULATOR_DIR` is also exported from `~/.bashrc`, so login/interactive
+  shells (including tmux terminals) already have it.
+- **Lint, format, and type-check need no emulator or env var**:
+  `npm run lint`, `npm run format:check`, `npm run type-check`.
+- **Running the CLI manually against a live emulator.** Start the emulator,
+  reset+seed it, then point `lean` at it:
+
+  ```bash
+  # start (long-running; use a tmux terminal)
+  LEAN_EMULATOR_STRICT=1 node "$HOME/emulate/packages/emulate/dist/index.js" \
+    start --service linear --port 4200
+  # seed with the doc-test fixtures (see Docs/_seed.yaml) via POST /__reset then /__seed
+  # then run the CLI:
+  export LINEAR_API_KEY=lin_api_test LINEAR_API_URL=http://localhost:4200/graphql LEAN_SKIP_DOTENV=1
+  node dist/index.js issue list --all --format text
+  ```
+
+  Use `--format text` to force human-readable tables when stdout is not a TTY;
+  otherwise `lean` emits JSON.
+- The emulator build is captured in the VM snapshot. If it ever goes missing,
+  re-run the update script (it re-clones/rebuilds idempotently) or follow the
+  "First-time setup" steps above but clone to `$HOME/emulate`.
