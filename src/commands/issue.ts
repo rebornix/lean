@@ -28,6 +28,7 @@ import { findTeamByKey, resolveProjectForTeam, type LinearTeamSummary } from "..
 import { table, respond } from "../output/index.js";
 import { priorityLabel } from "../output/priority.js";
 import { LeanError } from "../errors.js";
+import { truncate } from "../utils/text.js";
 
 type LinearClient = ReturnType<typeof getClient>;
 
@@ -374,7 +375,7 @@ function renderIssueRows(issues: LinearIssueSummary[]): void {
   table(
     issues.map(i => ({
       ID: i.identifier,
-      Title: i.title.slice(0, 60),
+      Title: truncate(i.title, 60),
       State: i.state?.name ?? "—",
       Priority: priorityLabel(i.priority),
       Assignee: i.assignee?.name ?? "—",
